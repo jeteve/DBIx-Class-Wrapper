@@ -108,18 +108,18 @@ So here's a very basic AllProducts:
 =cut
 
 has 'dbic_schema' => ( is => 'rw' , isa => 'DBIx::Class::Schema' , required => 1 );
-has 'dbic_fact_baseclass' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
+has 'dbic_factory_baseclass' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
 
 has '_dbic_dbic_fact_classes' => ( is => 'ro' , isa => 'HashRef[Bool]' , lazy_build => 1); 
 
-sub _build_dbic_fact_baseclass{
+sub _build_dbic_factory_baseclass{
     my ($self) = @_;
     return ref ($self).'::Wrapper::Factory';
 }
 
 sub _build__dbic_dbic_fact_classes{
     my ($self) = @_;
-    my $baseclass = $self->dbic_fact_baseclass();
+    my $baseclass = $self->dbic_factory_baseclass();
     my $res = {};
     my $mp = Module::Pluggable::Object->new( search_path => [ $baseclass ]);
     foreach my $candidate_class ( $mp->plugins() ){
@@ -158,7 +158,7 @@ sub dbic_factory{
   unless( $name ){
     confess("Missing name in call to dbic_factory");
   }
-  my $class_name = $self->dbic_fact_baseclass().'::'.$name;
+  my $class_name = $self->dbic_factory_baseclass().'::'.$name;
 
   ## Build a class dynamically if necessary
   unless( $self->_dbic_dbic_fact_classes->{$class_name} ){
