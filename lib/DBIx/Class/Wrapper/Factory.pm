@@ -1,4 +1,5 @@
 package DBIx::Class::Wrapper::Factory;
+
 use Moose;
 extends qw/DBIx::Class::Wrapper::FactoryBase/;
 
@@ -45,7 +46,7 @@ specific resultsets.
 
 sub build_dbic_rs{
   my ($self) = @_;
-  my $resultset = eval{ return $self->bm->dbix_schema->resultset($self->name); };
+  my $resultset = eval{ return $self->bm->dbic_schema->resultset($self->name); };
   if( my $err = $@ ){
     confess("Cannot build resultset for $self NAME=".$self->name().' :'.$err);
   }

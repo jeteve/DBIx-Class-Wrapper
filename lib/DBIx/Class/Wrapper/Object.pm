@@ -1,4 +1,5 @@
 package DBIx::Class::Wrapper::Object;
+
 use Moose;
 has 'factory' => ( isa => 'DBIx::Class::Wrapper::Factory' , required => 1 , is => 'ro' );
 
