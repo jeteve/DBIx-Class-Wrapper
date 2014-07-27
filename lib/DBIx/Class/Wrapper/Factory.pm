@@ -45,7 +45,7 @@ specific resultsets.
 
 sub build_dbic_rs{
   my ($self) = @_;
-  my $resultset = eval{ return $self->bm->jcom_schema->resultset($self->name); };
+  my $resultset = eval{ return $self->bm->dbix_schema->resultset($self->name); };
   if( my $err = $@ ){
     confess("Cannot build resultset for $self NAME=".$self->name().' :'.$err);
   }

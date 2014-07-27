@@ -25,7 +25,7 @@ in your own business classes.
 Later
 
  my $schema = instance of DBIx schema
- my $app = My::App->new( { jcom_schema => $schema } );
+ my $app = My::App->new( { dbic_schema => $schema } );
  ## And use the dbic resultsets-ish methods.
  my $products = $app->dbic_factory('Product'); ## Get a new instance of the Product resultset.
 
@@ -81,7 +81,7 @@ leaving unlimited access to all product to a limited set of places.
      my ($self) = @_;
      ## Note that you can always access your original business model
      ## from a factory (method bm).
-     return $self->bm->jcom_schema->resultset('Product')->search_rs({ active => 1});
+     return $self->bm->dbic_schema->resultset('Product')->search_rs({ active => 1});
      ## This is a simple example. You can restrict your products set
      ## according to any current property of your business model for instance.
  }
@@ -101,25 +101,25 @@ So here's a very basic AllProducts:
    ## Some extra security.
    unless( $self->bm->current_user()->is_admin() ){ confess "Sorry you cant access that"; }
 
-   return $self->bm()->jcom_schema->resultset('Product')->search_rs();
+   return $self->bm()->dbic_schema->resultset('Product')->search_rs();
  }
 
 
 =cut
 
-has 'jcom_schema' => ( is => 'rw' , isa => 'DBIx::Class::Schema' , required => 1 );
-has 'jcom_fact_baseclass' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
+has 'dbic_schema' => ( is => 'rw' , isa => 'DBIx::Class::Schema' , required => 1 );
+has 'dbic_fact_baseclass' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
 
-has '_jcom_dbic_fact_classes' => ( is => 'ro' , isa => 'HashRef[Bool]' , lazy_build => 1); 
+has '_dbic_dbic_fact_classes' => ( is => 'ro' , isa => 'HashRef[Bool]' , lazy_build => 1); 
 
-sub _build_jcom_fact_baseclass{
+sub _build_dbic_fact_baseclass{
     my ($self) = @_;
     return ref ($self).'::Wrapper::Factory';
 }
 
-sub _build__jcom_dbic_fact_classes{
+sub _build__dbic_dbic_fact_classes{
     my ($self) = @_;
-    my $baseclass = $self->jcom_fact_baseclass();
+    my $baseclass = $self->dbic_fact_baseclass();
     my $res = {};
     my $mp = Module::Pluggable::Object->new( search_path => [ $baseclass ]);
     foreach my $candidate_class ( $mp->plugins() ){
@@ -139,16 +139,16 @@ sub _build__jcom_dbic_fact_classes{
 
 =head2 dbic_factory
 
-Returns a new instance of L<DBIx::Class::Factory> that wraps around the given DBIC ResultSet name
+Returns a new instance of L<DBIx::Class::Wrapper::Factory> that wraps around the given DBIC ResultSet name
 if such a resultset exists. Dies otherwise.
 
 Additionaly, you can set a ad-hoc resulset if you want to locally restrict your original resultset.
 
 usage:
 
-    my $f = $this->jcom_factory('Article');
+    my $f = $this->dbic_factory('Article');
 
-    my $f = $this->jcom_factory('Article' , { dbic_rs => $schema->resultset('Article')->search_rs({ is_active => 1 }) });
+    my $f = $this->dbic_factory('Article' , { dbic_rs => $schema->resultset('Article')->search_rs({ is_active => 1 }) });
 
 =cut
 
@@ -158,13 +158,13 @@ sub dbic_factory{
   unless( $name ){
     confess("Missing name in call to dbic_factory");
   }
-  my $class_name = $self->jcom_fact_baseclass().'::'.$name;
+  my $class_name = $self->dbic_fact_baseclass().'::'.$name;
 
   ## Build a class dynamically if necessary
-  unless( $self->_jcom_dbic_fact_classes->{$class_name} ){
+  unless( $self->_dbic_dbic_fact_classes->{$class_name} ){
     ## We need to build such a class.
     Moose::Meta::Class->create($class_name => ( superclasses => [ 'DBIx::Class::Wrapper::Factory' ] ));
-    $self->_jcom_dbic_fact_classes->{$class_name} = 1;
+    $self->_dbic_dbic_fact_classes->{$class_name} = 1;
   }
   ## Ok, $class_name is now there
 

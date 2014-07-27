@@ -3,7 +3,7 @@ use Moose;
 
 =head1 NAME
 
-JCOM::BM::Factory - A Factory class to inherit from
+DBIx::Class::Wrapper::FactoryBase - A Factory class to inherit from
 
 =cut
 

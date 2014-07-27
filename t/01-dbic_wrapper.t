@@ -6,7 +6,7 @@ use Test::Fatal qw/dies_ok lives_ok/;
 use DBI;
 use DBD::SQLite;
 
-use JCOM::BM::DBICWrapper;
+use DBIx::Class::Wrapper;
 
 
 package My::Schema;
@@ -57,7 +57,7 @@ use Moose;
 extends qw/My::Model::Wrapper::Factory::Product/;
 sub build_dbic_rs{
     my ($self) = @_;
-    return $self->bm->jcom_schema->resultset('Product')->search_rs({ active => 1});
+    return $self->bm->dbic_schema->resultset('Product')->search_rs({ active => 1});
 }
 1;
 
@@ -67,7 +67,7 @@ extends qw/My::Model::Wrapper::Factory::Product/;
 sub build_dbic_rs{
   my ($self) = @_;
   my $bm = $self->bm();
-  return $bm->jcom_schema->resultset('Product')->search_rs({ colour => $bm->colour() });
+  return $bm->dbic_schema->resultset('Product')->search_rs({ colour => $bm->colour() });
 };
 1;
 
@@ -88,7 +88,7 @@ ok( $schema->resultset('Product') , "Product resultset is there");
 
 
 ## Build a My::Model using it
-ok( my $bm = My::Model->new({ jcom_schema => $schema }) , "Ok built a model");
+ok( my $bm = My::Model->new({ dbic_schema => $schema }) , "Ok built a model");
 
 ## And test a few stuff.
 ok( my $pf = $bm->dbic_factory('Product') , "Ok got product factory");
@@ -97,7 +97,7 @@ isa_ok( $pf , 'My::Model::Wrapper::Factory::Product');
 
 ok( my $name_col = $bm->dbic_factory('Product')->get_column('name') , "Ok got a name column");
 ok( my $pf2 = $bm->dbic_factory('ActiveProduct') , "Ok got another product factory");
-ok( my $pf3 = $bm->dbic_factory('Product' , { dbic_rs => $bm->jcom_schema->resultset('Product')->search_rs({ active => 1})}), "Can build a general product on a specific Rs");
+ok( my $pf3 = $bm->dbic_factory('Product' , { dbic_rs => $bm->dbic_schema->resultset('Product')->search_rs({ active => 1})}), "Can build a general product on a specific Rs");
 ok( my $bf = $bm->dbic_factory('Builder') , "Ok got builder factory");
 
 ## Object creation.
