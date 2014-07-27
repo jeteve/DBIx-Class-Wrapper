@@ -21,6 +21,10 @@ with qw/DBIx::Class::Wrapper/;
 
 has  'colour' => ( is => 'rw' , isa => 'Str' , default => 'green' , required => 1 );
 
+sub factory{
+  goto &dbic_factory;
+}
+
 sub _build_dbic_factory_baseclass{
   return 'My::Model::DBICFactory';
 }
@@ -99,10 +103,10 @@ ok( my $pf = $bm->dbic_factory('Product') , "Ok got product factory");
 
 isa_ok( $pf , 'My::Model::DBICFactory::Product');
 
-ok( my $name_col = $bm->dbic_factory('Product')->get_column('name') , "Ok got a name column");
-ok( my $pf2 = $bm->dbic_factory('ActiveProduct') , "Ok got another product factory");
-ok( my $pf3 = $bm->dbic_factory('Product' , { dbic_rs => $bm->dbic_schema->resultset('Product')->search_rs({ active => 1})}), "Can build a general product on a specific Rs");
-ok( my $bf = $bm->dbic_factory('Builder') , "Ok got builder factory");
+ok( my $name_col = $bm->factory('Product')->get_column('name') , "Ok got a name column");
+ok( my $pf2 = $bm->factory('ActiveProduct') , "Ok got another product factory");
+ok( my $pf3 = $bm->factory('Product' , { dbic_rs => $bm->dbic_schema->resultset('Product')->search_rs({ active => 1})}), "Can build a general product on a specific Rs");
+ok( my $bf = $bm->factory('Builder') , "Ok got builder factory");
 
 ## Object creation.
 ok( my $b = $bf->create( { bname => 'Builder1' }) , "Ok built the first builder");
