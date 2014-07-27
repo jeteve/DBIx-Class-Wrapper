@@ -17,7 +17,7 @@ __PACKAGE__->naming('current');
 
 package My::Model;
 use Moose;
-with qw/JCOM::BM::DBICWrapper/;
+with qw/DBIx::Class::Wrapper/;
 
 has  'colour' => ( is => 'rw' , isa => 'Str' , default => 'green' , required => 1 );
 
@@ -25,7 +25,7 @@ has  'colour' => ( is => 'rw' , isa => 'Str' , default => 'green' , required => 
 
 package My::Model::O::Product;
 use Moose;
-extends 'JCOM::BM::DBICObject';
+extends 'DBIx::Class::Wrapper::Object';
 has 'o' => ( is => 'ro' , required => 1 , handles => [ 'id' , 'name' ] );
 sub turn_on{
     my ($self) = @_;
@@ -42,9 +42,9 @@ sub deactivate{
 
 1;
 
-package My::Model::DBICFactory::Product;
+package My::Model::Wrapper::Factory::Product;
 use Moose;
-extends  qw/JCOM::BM::DBICFactory/ ;
+extends  qw/DBIx::Class::Wrapper::Factory/ ;
 
 sub wrap{
     my ($self , $o) = @_;
@@ -52,18 +52,18 @@ sub wrap{
 }
 1;
 
-package My::Model::DBICFactory::ActiveProduct;
+package My::Model::Wrapper::Factory::ActiveProduct;
 use Moose;
-extends qw/My::Model::DBICFactory::Product/;
+extends qw/My::Model::Wrapper::Factory::Product/;
 sub build_dbic_rs{
     my ($self) = @_;
     return $self->bm->jcom_schema->resultset('Product')->search_rs({ active => 1});
 }
 1;
 
-package My::Model::DBICFactory::ColouredProduct;
+package My::Model::Wrapper::Factory::ColouredProduct;
 use Moose;
-extends qw/My::Model::DBICFactory::Product/;
+extends qw/My::Model::Wrapper::Factory::Product/;
 sub build_dbic_rs{
   my ($self) = @_;
   my $bm = $self->bm();
@@ -92,6 +92,9 @@ ok( my $bm = My::Model->new({ jcom_schema => $schema }) , "Ok built a model");
 
 ## And test a few stuff.
 ok( my $pf = $bm->dbic_factory('Product') , "Ok got product factory");
+
+isa_ok( $pf , 'My::Model::Wrapper::Factory::Product');
+
 ok( my $name_col = $bm->dbic_factory('Product')->get_column('name') , "Ok got a name column");
 ok( my $pf2 = $bm->dbic_factory('ActiveProduct') , "Ok got another product factory");
 ok( my $pf3 = $bm->dbic_factory('Product' , { dbic_rs => $bm->jcom_schema->resultset('Product')->search_rs({ active => 1})}), "Can build a general product on a specific Rs");
@@ -125,7 +128,10 @@ ok( $pf2->find($ap->id()), "We can find the second product because it's active")
 
 ## Now some searching.
 ok( my $search_rs = $pf->search_rs(undef , { page => 1 }) , "Ok got a resultset");
-isa_ok( $search_rs , 'My::Model::DBICFactory::Product' , "And its a Product factory");
+
+
+isa_ok( $search_rs , 'My::Model::Wrapper::Factory::Product' , "And its a Product factory");
+
 is( $search_rs->pager()->total_entries() , 2 , "Can access total entries via pager");
 cmp_ok( $search_rs->count() , '==' , 2 ,  "Got two products");
 my $seen_p = 0;
@@ -137,7 +143,7 @@ cmp_ok( $seen_p , '==' , 2 , "Seen two products thanks to next");
 
 ## Same thing on the active only products.
 ok( my $act_search = $pf2->search() , "Ok got active product search");
-isa_ok( $act_search , 'My::Model::DBICFactory::Product' , "And its a Product factory");
+isa_ok( $act_search , 'My::Model::Wrapper::Factory::Product' , "And its a Product factory");
 cmp_ok( $act_search->count() , '==' , 1 ,  "Got one product");
 $seen_p = 0;
 while( my $next_p = $act_search->next() ){

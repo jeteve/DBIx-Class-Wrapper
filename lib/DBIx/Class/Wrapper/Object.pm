@@ -1,10 +1,10 @@
-package JCOM::BM::DBICObject;
+package DBIx::Class::Wrapper::Object;
 use Moose;
-has 'factory' => ( isa => 'JCOM::BM::DBICFactory' , required => 1 , is => 'ro' );
+has 'factory' => ( isa => 'DBIx::Class::Wrapper::Factory' , required => 1 , is => 'ro' );
 
 =head1 NAME
 
-JCOM::BM::DBICObject - Base class for object containing business code around another DBIC object.
+DBIx::Class::Wrapper::Object - Base class for object containing business code around another DBIC object.
 
 =head1 PROPERTIES
 
@@ -20,7 +20,7 @@ The business model. Mandatory.
 
   package My::BM::O::User;
   use Moose;
-  extends qw/JCOM::BM::DBICObject/;
+  extends qw/DBIx::Class::Wrapper::Object/;
 
   has 'dbuser' => ( isa => 'My::Schema::Result::User' , is => 'ro' , required => 1 , handles => qw/.*/ );
 

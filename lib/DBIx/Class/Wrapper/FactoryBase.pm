@@ -1,4 +1,4 @@
-package JCOM::BM::Factory;
+package DBIx::Class::Wrapper::FactoryBase;
 use Moose;
 
 =head1 NAME

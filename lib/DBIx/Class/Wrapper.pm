@@ -1,4 +1,5 @@
-package JCOM::BM::DBICWrapper;
+package DBIx::Class::Wrapper;
+
 use Moose::Role;
 use Moose::Meta::Class;
 use Module::Pluggable::Object;
@@ -6,7 +7,7 @@ use Class::Load;
 
 =head1 NAME
 
-JCOM::BM::DBICWrapper - A Moose role to allow your business model to wrap business code around a dbic model.
+DBIx::Class::Wrapper - A Moose role to allow your business model to wrap business code around a dbic model.
 
 
 =head1 SYNOPSIS
@@ -18,7 +19,7 @@ in your own business classes.
 
  package My::App;
  use Moose;
- with qw/JCOM::BM::DBICWrapper/;
+ with qw/DBIx::Class::Wrapper/;
  1
 
 Later
@@ -37,8 +38,8 @@ Later
 
 First you need a DBIC factory that will wrap the raw dbic object into your own class of product
 
- package My::Model::DBICFactory::Product;
- use Moose; extends  qw/JCOM::BM::DBICFactory/ ;
+ package My::Model::Wrapper::Factory::Product;
+ use Moose; extends  qw/DBIx::Class::Wrapper::Factory/ ;
  sub wrap{
    my ($self , $o) = @_;
    return My::Model::O::Product->new({o => $o , factory => $self });
@@ -73,9 +74,9 @@ Then from your main code, continue using the Product resultset as normal.
 Let's say you decide that from now, the bulk of your application should access only active products,
 leaving unlimited access to all product to a limited set of places.
 
- package My::Model::DBICFactory::Product;
+ package My::Model::Wrapper::Factory::Product;
  use Moose;
- extends qw/JCOM::BM::DBICFactory/;
+ extends qw/DBIx::Class::Wrapper::Factory/;
  sub build_dbic_rs{
      my ($self) = @_;
      ## Note that you can always access your original business model
@@ -93,8 +94,8 @@ restricted to active products only.
 Surely you want admin parts of your application to access all products.
 So here's a very basic AllProducts:
 
- package My::Model::DBICFactory::AllProduct;
- use Moose; extends qw/My::Model::DBICFactory::Product/;
+ package My::Model::Wrapper::Factory::AllProduct;
+ use Moose; extends qw/My::Model::Wrapper::Factory::Product/;
  sub build_dbic_rs{
    my ($self) = @_;
    ## Some extra security.
@@ -113,7 +114,7 @@ has '_jcom_dbic_fact_classes' => ( is => 'ro' , isa => 'HashRef[Bool]' , lazy_bu
 
 sub _build_jcom_fact_baseclass{
     my ($self) = @_;
-    return ref ($self).'::DBICFactory';
+    return ref ($self).'::Wrapper::Factory';
 }
 
 sub _build__jcom_dbic_fact_classes{
@@ -124,8 +125,8 @@ sub _build__jcom_dbic_fact_classes{
     foreach my $candidate_class ( $mp->plugins() ){
 	Class::Load::load_class( $candidate_class );
 	# Code is loaded
-	unless( $candidate_class->isa('JCOM::BM::DBICFactory') ){
-	    warn "Class $candidate_class does not extend JCOM::BM::DBICFactory.";
+	unless( $candidate_class->isa('DBIx::Class::Wrapper::Factory') ){
+	    warn "Class $candidate_class does not extend DBIx::Class::Wrapper::Factory.";
 	    next;
 	}
 	# And inherit from the right class.
@@ -138,7 +139,7 @@ sub _build__jcom_dbic_fact_classes{
 
 =head2 dbic_factory
 
-Returns a new instance of L<JCOM::BM::Factory> that wraps around the given DBIC ResultSet name
+Returns a new instance of L<DBIx::Class::Factory> that wraps around the given DBIC ResultSet name
 if such a resultset exists. Dies otherwise.
 
 Additionaly, you can set a ad-hoc resulset if you want to locally restrict your original resultset.
@@ -162,7 +163,7 @@ sub dbic_factory{
   ## Build a class dynamically if necessary
   unless( $self->_jcom_dbic_fact_classes->{$class_name} ){
     ## We need to build such a class.
-    Moose::Meta::Class->create($class_name => ( superclasses => [ 'JCOM::BM::DBICFactory' ] ));
+    Moose::Meta::Class->create($class_name => ( superclasses => [ 'DBIx::Class::Wrapper::Factory' ] ));
     $self->_jcom_dbic_fact_classes->{$class_name} = 1;
   }
   ## Ok, $class_name is now there

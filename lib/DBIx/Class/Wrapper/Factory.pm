@@ -1,14 +1,14 @@
-package JCOM::BM::DBICFactory;
+package DBIx::Class::Wrapper::Factory;
 use Moose;
-extends qw/JCOM::BM::Factory/;
+extends qw/DBIx::Class::Wrapper::FactoryBase/;
 
 =head1 NAME
 
-JCOM::BM::DBICFactory - A factory class that decorates a L<DBIx::Class::ResultSet>.
+DBIx::Class::Wrapper::Factory - A factory class that decorates a L<DBIx::Class::ResultSet>.
 
 =head1 SYNOPSIS
 
-A model implementing the role JCOM::BM::DBICWrapper will automatically instanciate
+A model implementing the role DBIx::Class::Wrapper will automatically instanciate
 subclasses of this for any underlying DBIx::Class ResultSet.
 
 To implement your own factory containing your business code for the underlying
@@ -22,12 +22,12 @@ DBIC resulsets, you need to subclass this.
 
 =head2 bm
 
-The business model consuming the role L<JCOM::BM::DBICWrapper>. Mandatory.
+The business model consuming the role L<DBIx::Class::Wrapper>. Mandatory.
 
 =cut
 
 has 'dbic_rs' => ( is => 'ro' , isa => 'DBIx::Class::ResultSet', required => 1 , lazy_build => 1);
-has 'bm' => ( is => 'ro' , does => 'JCOM::BM::DBICWrapper' , required => 1 , weak_ref => 1 );
+has 'bm' => ( is => 'ro' , does => 'DBIx::Class::Wrapper' , required => 1 , weak_ref => 1 );
 has 'name' => ( is => 'ro' , isa => 'Str' , required => 1 );
 
 sub _build_dbic_rs{
