@@ -9,6 +9,13 @@ use Class::Load;
 
 DBIx::Class::Wrapper - A Moose role to allow your business model to wrap business code around a dbic model.
 
+=head1 BUILD STATUS
+
+=begin html
+
+<a href="https://travis-ci.org/jeteve/DBIx-Class-Wrapper"><img src="https://travis-ci.org/jeteve/DBIx-Class-Wrapper.svg?branch=master"></a>
+
+=end html
 
 =head1 SYNOPSIS
 
