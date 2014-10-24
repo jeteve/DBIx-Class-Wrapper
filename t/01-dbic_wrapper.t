@@ -6,72 +6,10 @@ use Test::Fatal qw/dies_ok lives_ok/;
 use DBI;
 use DBD::SQLite;
 
-use DBIx::Class::Wrapper;
+use lib 't/lib';
 
-
-package My::Schema;
-use base qw/DBIx::Class::Schema::Loader/;
-__PACKAGE__->naming('current');
-1;
-
-
-package My::Model;
-use Moose;
-with qw/DBIx::Class::Wrapper/;
-
-has  'colour' => ( is => 'rw' , isa => 'Str' , default => 'green' , required => 1 );
-
-1;
-
-package My::Model::O::Product;
-use Moose;
-extends 'DBIx::Class::Wrapper::Object';
-has 'o' => ( is => 'ro' , required => 1 , handles => [ 'id' , 'name' ] );
-sub turn_on{
-    my ($self) = @_;
-    return "Turning on $self";
-}
-
-sub activate{
-    shift->o()->update({ active => 1});
-}
-
-sub deactivate{
-    shift->o()->update({ active => 0});
-}
-
-1;
-
-package My::Model::Wrapper::Factory::Product;
-use Moose;
-extends  qw/DBIx::Class::Wrapper::Factory/ ;
-
-sub wrap{
-    my ($self , $o) = @_;
-    return My::Model::O::Product->new({o => $o , factory => $self });
-}
-1;
-
-package My::Model::Wrapper::Factory::ActiveProduct;
-use Moose;
-extends qw/My::Model::Wrapper::Factory::Product/;
-sub build_dbic_rs{
-    my ($self) = @_;
-    return $self->bm->dbic_schema->resultset('Product')->search_rs({ active => 1});
-}
-1;
-
-package My::Model::Wrapper::Factory::ColouredProduct;
-use Moose;
-extends qw/My::Model::Wrapper::Factory::Product/;
-sub build_dbic_rs{
-  my ($self) = @_;
-  my $bm = $self->bm();
-  return $bm->dbic_schema->resultset('Product')->search_rs({ colour => $bm->colour() });
-};
-1;
-
-package main;
+use My::Schema;
+use My::Model;
 
 ## Connect to a DB and dynamically build the DBIC model.
 ok( my $dbh = DBI->connect("dbi:SQLite::memory:" , "" , "") , "Ok connected as a DBI");

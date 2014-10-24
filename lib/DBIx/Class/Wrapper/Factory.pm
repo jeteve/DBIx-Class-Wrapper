@@ -234,9 +234,12 @@ Usage:
 sub loop_through{
   my ($self, $code , $opts ) = @_;
 
-  $opts //= {};
+  unless( defined $opts ){
+      $opts = {};
+  }
+
   my $limit = $opts->{limit};
-  my $rows = $opts->{rows} // 10;
+  my $rows = defined $opts->{rows} ? $opts->{rows} : 10;
 
   # init
   my $page = 1;

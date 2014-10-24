@@ -154,7 +154,9 @@ usage:
 
 sub dbic_factory{
   my ($self , $name , $init_args ) = @_;
-  $init_args //= {};
+  unless( defined $init_args ){
+      $init_args = {};
+  }
   unless( $name ){
     confess("Missing name in call to dbic_factory");
   }
