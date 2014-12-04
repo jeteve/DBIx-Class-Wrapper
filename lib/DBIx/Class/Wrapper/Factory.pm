@@ -54,6 +54,20 @@ sub build_dbic_rs{
 }
 
 
+=head2 new_result
+
+Instanciate a new NOT INSERTED IN DB row and wrap it using
+the wrap method.
+
+See L<DBIx::Class::ResultSet::new_result>
+
+=cut
+
+sub new_result{
+    my ($self, $args) = @_;
+    return $self->wrap($self->dbic_rs->new_result($args));
+}
+
 =head2 create
 
 Creates a new object in the DBIC Schema and return it wrapped

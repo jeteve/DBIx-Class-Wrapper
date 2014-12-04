@@ -39,6 +39,9 @@ ok( my $pf3 = $bm->dbic_factory('Product' , { dbic_rs => $bm->dbic_schema->resul
 ok( my $bf = $bm->dbic_factory('Builder') , "Ok got builder factory");
 
 ## Object creation.
+ok( my $in_memory = $bf->new_result({ bname => 'BuilderMemory' }) , "Ok can create an object just in memory");
+ok( ! $in_memory->in_storage() , "Created object is not in storage");
+
 ok( my $b = $bf->create( { bname => 'Builder1' }) , "Ok built the first builder");
 ok( my $ob = $bf->find_or_create( { bname => 'Builder1' }) , "Ok found or create builder");
 ok( my $first = $bf->first() , "Ok can find first builder");

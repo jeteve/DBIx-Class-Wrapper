@@ -1,4 +1,5 @@
 package My::Model;
+our $VERSION = '0.01';
 
 use Moose;
 
