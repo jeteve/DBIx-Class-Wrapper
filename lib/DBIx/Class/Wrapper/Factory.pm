@@ -297,6 +297,16 @@ sub loop_through{
   my $limit = $opts->{limit};
   my $rows = defined $opts->{rows} ? $opts->{rows} : 10;
 
+  my $attrs = { %{$self->dbic_rs->{attrs} || {} } };
+  unless( $attrs->{order_by} ){
+    warn(q|
+
+Missing order_by attribute. Order will be undefined in |.__PACKAGE__.q| loop_through.
+
+|);
+
+  }
+
   # init
   my $page = 1;
   my $search = $self->search(undef , { page => $page , rows => $rows });
@@ -319,6 +329,144 @@ sub loop_through{
     $page++;
     $search = $self->search(undef, { page => $page , rows => $rows });
   }
+}
+
+
+=head2 fast_loop_through
+
+Loops through all the objects of this factory
+in a Seeking fashion. If the primary key of the underlying
+resultset is orderable and indexed, this should run
+in linear time of the number of rows on the resultset.
+
+Usage:
+
+  $this->fast_loop_through(sub{my ($o) = @_; ... } );
+
+  $this->fast_loop_through(sub{ .. } , { rows => 100 , limit => 1000 });
+
+Options:
+
+ rows: Fetch this amount of rows at each query. Default to 100
+
+ limit: Return after looping through this amount of rows.
+
+B<Important>
+
+=over
+
+You do not need to order the set, as this will order it by ascending primary key.
+
+Incidently, it means that if other processes are writing to this resultset,
+this method will play catch up on the resultset, so if the writing rate is higher
+than the reading rate, this might take a while to return.
+
+If you want to avoid this, set the option 'order' to 'desc'.
+
+=back
+
+Returns the number of rows looped through.
+
+Prerequisites:
+
+Must have:
+
+- The underlying L<DBIx::Class::ResultSource> has a primary key
+
+- Each component of the primary key supports the operators '>' and '<'
+
+- It is possible to order all the rows by this primary key alone.
+
+Should have:
+
+- This primary key is indexed and offers fast comparison access.
+
+Inspired by http://use-the-index-luke.com/sql/partial-results/fetch-next-page
+
+=cut
+
+sub fast_loop_through{
+  my ($self , $code, $opts) = @_;
+
+  unless( defined $code ){ $code = sub{}; }
+  unless( defined $opts ){ $opts = {}; }
+
+  my $order = $opts->{order} || 'asc';
+  my $rows = $opts->{rows} || 100;
+  my $limit = $opts->{limit};
+
+  # Gather the required info about the resultset
+  my $rs = $self->dbic_rs();
+
+  # What is this source alias?
+  my $me = $rs->current_source_alias();
+
+  # The source
+  my $source = $rs->result_source();
+  my @primary_columns = $source->primary_columns();
+  unless( @primary_columns ){
+    confess("Result Source ".$source->source_name()." does not have a primary key");
+  }
+
+  my $order_by = [ map{ +{ '-'.$order => $me.'.'.$_ } } @primary_columns ];
+
+  my $n_rows = 0;
+
+  my $last_row;
+  do{
+    my $resultset = $self->dbic_rs->search_rs(undef , { order_by => $order_by , rows => $rows });
+    if( $last_row ){
+      # We have a last row.
+      # The idea here is to use the primary key to get the rows above
+      # this last row.
+
+      # The primary key of the first queried row should be greater than
+      # the last row's one.
+      # Logically it should be: ( queried PK components ) > ( last row PK components )
+      # If the primary key is A , B , C , then the where clause should contain (for order desc):
+      # A > a || ( A = a && B > b || ( B = b && C > c ) )
+
+      my $top_or = { -or => [] };
+      my $cur_or = $top_or;
+
+      my $cmp_op = $order eq 'asc' ? '>' : '<';
+
+      my $key_i = 0;
+      for(; $key_i < @primary_columns - 1 ; $key_i++ ){
+
+        my $column = $primary_columns[$key_i];
+
+        my $nested_or = { -or => [] };
+
+        push @{ $cur_or->{-or} } , { $me.'.'.$column => { $cmp_op => $last_row->get_column($column) }};
+        push @{ $cur_or->{-or} } , { -and => [ { $me.'.'.$column => { '=' => $last_row->get_column($column) } },
+                                               $nested_or
+                                             ]
+                                   };
+        $cur_or = $nested_or;
+      }
+
+      my $last_column = $primary_columns[$key_i];
+      push @{ $cur_or->{-or} } , { $me.'.'.$last_column => {  $cmp_op => $last_row->get_column($last_column) } };
+
+      $resultset = $resultset->search_rs($top_or);
+    } # End of above last row seeking
+
+    $last_row = undef;
+
+    while( my $o = $resultset->next() ){
+      $last_row = $o;
+      my $wrapped = $self->wrap($o);
+      &$code($wrapped);
+      $n_rows++;
+
+      if( $limit && ( $n_rows == $limit ) ){
+        return $n_rows;
+      }
+    }
+  }while( $last_row );
+
+  return $n_rows;
 }
 
 =head2 next
