@@ -24,7 +24,7 @@ in your own business classes.
 
 =head2 Basic usage with no specific wrapping at all
 
- package My::App;
+ package My::Model;
  use Moose;
  with qw/DBIx::Class::Wrapper/;
  1
@@ -32,7 +32,7 @@ in your own business classes.
 Later
 
  my $schema = instance of DBIx schema
- my $app = My::App->new( { dbic_schema => $schema } );
+ my $app = My::Model->new( { dbic_schema => $schema } );
  ## And use the dbic resultsets-ish methods.
  my $products = $app->dbic_factory('Product'); ## Get a new instance of the Product resultset.
 
@@ -111,6 +111,24 @@ So here's a very basic AllProducts:
    return $self->bm()->dbic_schema->resultset('Product')->search_rs();
  }
 
+
+=head2 Changing the factory base class.
+
+Until now, all your custom factories were named My::Model::Wrapper::Factory::<something>.
+
+If you want to customise the base class of those custom factories, you can do so by overriding
+the method _build_dbic_factory_baseclass in your model:
+
+ package My::Model;
+
+ use Moose;
+ with qw/DBIx::Class::Wrapper/;
+
+ sub _build_dbic_factory_baseclass{
+    return 'My::Model::DBICFactory'; # for instance.
+ }
+
+Then implement your factories as subpackages of My::Model::DBICFactory
 
 =cut
 

@@ -15,15 +15,19 @@ subclasses of this for any underlying DBIx::Class ResultSet.
 To implement your own factory containing your business code for the underlying
 DBIC resulsets, you need to subclass this.
 
+See L<DBIx::Class::Wrapper> for a simple synopsis overview.
+
 =head1 PROPERTIES
 
 =head2 dbic_rs
 
- The original L<DBIx::Class::ResultSet>. Mandatory.
+The original L<DBIx::Class::ResultSet>. Mandatory.
 
 =head2 bm
 
 The business model consuming the role L<DBIx::Class::Wrapper>. Mandatory.
+
+See L<DBIx::Class::Wrapper> for more details.
 
 =cut
 
@@ -39,8 +43,27 @@ sub _build_dbic_rs{
 =head2 build_dbic_rs
 
 Builds the dbic ResultSet to be wrapped by this factory.
+
+Defaults to the DBIx::Class Resultset with the same name
+as this factory.
+
 You can override this in your business specific factories to build
-specific resultsets.
+specific resultsets:
+
+ package My::Model::Factory::SomeName;
+
+ use Moose; extends  qw/DBIx::Class::Wrapper::Factory/ ;
+
+ sub build_dbic_rs{
+    my ($self) = @_;
+    return $self->bm->dbic_schema->resultset('SomeOtherName');
+
+    # Or with some restriction:
+
+    return $self->bm->dbic_schema->resultset('SomeOtherName')
+           ->search({ bla => ... });
+ }
+
 
 =cut
 
@@ -59,7 +82,7 @@ sub build_dbic_rs{
 Instanciate a new NOT INSERTED IN DB row and wrap it using
 the wrap method.
 
-See L<DBIx::Class::ResultSet::new_result>
+See L<DBIx::Class::ResultSet/new_result>
 
 =cut
 
@@ -73,6 +96,8 @@ sub new_result{
 Creates a new object in the DBIC Schema and return it wrapped
 using the wrapper method.
 
+See L<DBIx::Class::ResultSet/create>
+
 =cut
 
 sub create{
@@ -84,6 +109,8 @@ sub create{
 
 Finds an object in the DBIC schema and returns it wrapped
 using the wrapper method.
+
+See L<DBIx::Class::ResultSet/find>
 
 =cut
 
@@ -97,6 +124,8 @@ sub find{
 
 Equivalent to DBIC Resultset 'first' method.
 
+See <DBIx::Class::ResultSet/first>
+
 =cut
 
 sub first{
@@ -108,6 +137,8 @@ sub first{
 =head2 find_or_create
 
 Wraps around the original DBIC find_or_create method.
+
+See L<DBIx::Class::ResultSet/find_or_create>
 
 =cut
 
@@ -122,6 +153,8 @@ sub find_or_create{
 
 Shortcut to underlying dbic_rs pager.
 
+See L<DBIx::Class::ResultSet/pager>.
+
 =cut
 
 sub pager{
@@ -131,9 +164,7 @@ sub pager{
 
 =head2 delete
 
-Shortcut to L<DBIx::Class::ResultSet> delete method of the
-underlying dbic_rs
-
+Shortcut to L<DBIx::Class::ResultSet/delete>
 
 =cut
 
@@ -145,6 +176,8 @@ sub delete{
 =head2 get_column
 
 Shortcut to the get_column of the decorated dbic_rs
+
+See L<DBIx::Class::ResultSet/get_column>
 
 =cut
 
@@ -168,6 +201,9 @@ sub search_rs{
 Search objects in the DBIC Schema and returns a new intance
 of this factory.
 
+Note that unlike DBIx::Class::ResultSet, this search method
+will not return an Array of all results in an array context.
+
 =cut
 
 sub search{
@@ -186,7 +222,13 @@ Wraps an L<DBIx::Class::Row> in a business object. By default, it returns the
 Row itself.
 
 Override that in your subclasses of factories if you need to wrap some business code
-around the L<DBIx::Class::Row>
+around the L<DBIx::Class::Row>:
+
+  sub wrap{
+     my ($self, $o) = @_;
+
+     return My::Model::O::SomeObject->new({ o => $o , ... });
+  }
 
 =cut
 
@@ -283,6 +325,8 @@ sub loop_through{
 
 Returns next Business Object from this current DBIx::Resultset.
 
+See L<DBIx::Class::ResultSet/next>
+
 =cut
 
 sub next{
@@ -295,6 +339,8 @@ sub next{
 =head2 count
 
 Returns the number of objects in this ResultSet.
+
+See L<DBIx::Class::ResultSet/count>
 
 =cut
 
