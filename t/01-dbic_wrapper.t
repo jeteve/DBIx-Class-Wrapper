@@ -140,5 +140,14 @@ cmp_ok( $bm->dbic_factory('ColouredProduct')->count() , '==' , 0 , 'No coloured 
   is( $real_total , $limit , "Ok didnt go further than limit");
 }
 
+subtest 'find_or_new' => sub {
+    plan tests => 4;
+    ok( my $result = $bf->find_or_new( { bname => 'FindOrNew' } ), 'A result is always returned' );
+    is( $result->in_storage(), 0, 'We have a result object which is not in storage' );
+    $result->insert();
+    ok( my $result2 = $bf->find_or_new( { bname => 'FindOrNew' } ), 'Found ( or new ) the result again' );
+    is( $result2->in_storage(), 1, 'The result is in storage this time' );
+};
+
 
 done_testing();

@@ -148,6 +148,19 @@ sub find_or_create{
   return $original ? $self->wrap($original) : undef;
 }
 
+=head2 find_or_new
+
+Wraps around the original DBIC find_or_new method.
+
+See L<DBIx::Class::ResultSet/find_or_new>
+
+=cut
+
+sub find_or_new {
+  my ($self, @args) = @_;
+  return $self->wrap( $self->dbic_rs->find_or_new( @args ) );
+}
+
 
 =head2 pager
 
