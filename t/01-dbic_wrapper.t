@@ -146,7 +146,7 @@ subtest 'find_or_new' => sub {
     is( $result->in_storage(), 0, 'We have a result object which is not in storage' );
     $result->insert();
     ok( my $result2 = $bf->find_or_new( { bname => 'FindOrNew' } ), 'Found ( or new ) the result again' );
-    is( $result->in_storage(), 1, 'The result is in storage this time' );
+    is( $result2->in_storage(), 1, 'The result is in storage this time' );
 };
 
 
