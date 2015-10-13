@@ -124,6 +124,18 @@ is( $cf->count() , $TEST_SIZE , "Ok inserted right number of dummy data");
 }
 
 {
+    # Test fast_loop_through simple with extra criteria
+    my $simple_count = 0;
+    $sf->search({ 'me.some_id' => { -between => [ 11 , 20 ] } })
+        ->fast_loop_through(
+            sub{
+                my ($o) = @_;
+                $simple_count++;
+            });
+    is( $simple_count , 10 , "Ok only 10 records");
+}
+
+{
   my %ticks = map{ join('-' , $_->id() ) => 1 } @COMPLEX_ROWS;
 
   my $complex_count = 0;
