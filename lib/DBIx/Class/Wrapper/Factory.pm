@@ -134,6 +134,18 @@ sub first{
   return $original ? $self->wrap($original) : undef;
 }
 
+=head2 single
+
+Equivalent to DBIx::Class::ResultSet::single. It's a bit more efficient than C<first()>.
+
+=cut
+
+sub single {
+  my ($self) = @_;
+  my $original = $self->dbic_rs->single();
+  return $original ? $self->wrap($original) : undef;
+}
+
 =head2 find_or_create
 
 Wraps around the original DBIC find_or_create method.
