@@ -45,7 +45,9 @@ ok( ! $in_memory->in_storage() , "Created object is not in storage");
 ok( my $b = $bf->create( { bname => 'Builder1' }) , "Ok built the first builder");
 ok( my $ob = $bf->find_or_create( { bname => 'Builder1' }) , "Ok found or create builder");
 ok( my $first = $bf->first() , "Ok can find first builder");
+ok( my $first_via_single = $bf->single(), "Ok can get first builder via single()" );
 cmp_ok( $b->id() , '==' , $ob->id() , "Both builders are the same");
+cmp_ok( $first->id(), '==', $first_via_single->id(), 'first() and single() get same object' );
 ## Object loopback
 ok( $b = $bf->find($b->id()) , "Ok found it by id");
 cmp_ok( $b->bname , 'eq' , 'Builder1' , "Good data");
