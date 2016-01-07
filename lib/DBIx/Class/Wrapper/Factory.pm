@@ -9,7 +9,7 @@ DBIx::Class::Wrapper::Factory - A factory class that decorates a L<DBIx::Class::
 
 =head1 SYNOPSIS
 
-A model implementing the role DBIx::Class::Wrapper will automatically instanciate
+A model implementing the role DBIx::Class::Wrapper will automatically instantiate
 subclasses of this for any underlying DBIx::Class ResultSet.
 
 To implement your own factory containing your business code for the underlying
@@ -79,7 +79,7 @@ sub build_dbic_rs{
 
 =head2 new_result
 
-Instanciate a new NOT INSERTED IN DB row and wrap it using
+Instantiate a new NOT INSERTED IN DB row and wrap it using
 the wrap method.
 
 See L<DBIx::Class::ResultSet/new_result>
@@ -223,7 +223,7 @@ sub search_rs{
 
 =head2 search
 
-Search objects in the DBIC Schema and returns a new intance
+Search objects in the DBIC Schema and returns a new instance
 of this factory.
 
 Note that unlike DBIx::Class::ResultSet, this search method
@@ -382,7 +382,9 @@ B<Important>
 
 You do not need to order the set, as this will order it by ascending primary key.
 
-Incidently, it means that if other processes are writing to this resultset,
+This means aggregation functions (such as group_by) will not work.
+
+Incidentally, it means that if other processes are writing to this resultset,
 this method will play catch up on the resultset, so if the writing rate is higher
 than the reading rate, this might take a while to return.
 
