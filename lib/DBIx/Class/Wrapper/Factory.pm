@@ -146,6 +146,20 @@ sub single {
   return $original ? $self->wrap($original) : undef;
 }
 
+=head2 update_or_create
+
+Wraps around the original DBIC update_or_create method.
+
+See L<DBIx::Class::ResultSet/update_or_create>
+
+=cut
+
+sub update_or_create {
+    my ($self, $args) = @_;
+    my $original = $self->dbic_rs->update_or_create($args);
+    return $original ? $self->wrap($original) : undef;
+}
+
 =head2 find_or_create
 
 Wraps around the original DBIC find_or_create method.
